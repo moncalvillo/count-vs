@@ -1,29 +1,23 @@
-import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import CreateRoomScreen from "./screens/CreateRoomScreen";
-import HomeScreen from "./screens/HomeScreen";
-import RoomScreen from "./screens/RoomScreen";
-export type RootStackParamList = {
-  Home: undefined;
-  CreateRoom: undefined;
-  Room: { roomCode?: string };
-};
-const Stack = createNativeStackNavigator<RootStackParamList>();
+import * as React from "react";
+import { Provider as PaperProvider, MD3DarkTheme } from "react-native-paper";
+import AppNavigator from "./src/navigation/AppNavigator";
 
-function RootStack() {
-  return (
-    <Stack.Navigator initialRouteName="Home">
-      <Stack.Screen name="Home" component={HomeScreen} />
-      <Stack.Screen name="CreateRoom" component={CreateRoomScreen} />
-      <Stack.Screen name="Room" component={RoomScreen} />
-    </Stack.Navigator>
-  );
-}
+const theme = {
+  ...MD3DarkTheme,
+  colors: {
+    ...MD3DarkTheme.colors,
+    primary: "#F44336",
+    accent: "#FFC107",
+    background: "#1C1C1C",
+    surface: "#2D2D2D",
+    text: "#E0E0E0",
+  },
+};
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <RootStack />
-    </NavigationContainer>
+    <PaperProvider theme={theme}>
+      <AppNavigator />
+    </PaperProvider>
   );
 }
