@@ -39,11 +39,7 @@ const RoomScreen = ({ route, navigation }: RoomScreenProps) => {
       (p) => p.id === currentUserId
     );
 
-    if (
-      !currentParticipant ||
-      currentParticipant.score + increment > 100 ||
-      currentParticipant.score + increment < 0
-    ) {
+    if (!currentParticipant || currentParticipant.score + increment < 0) {
       return;
     }
 
@@ -80,38 +76,51 @@ const RoomScreen = ({ route, navigation }: RoomScreenProps) => {
           <Title style={styles.roomTitle} numberOfLines={1}>
             {name}
           </Title>
-          <Paragraph style={styles.roomDetails}>
-            Code: {code}
-            {"\n"}
+          <Title style={styles.code} numberOfLines={1}>
+            {code}
+          </Title>
+          <Paragraph style={styles.roomDetails} numberOfLines={1}>
             {description}
-            {"\n"}Capacity: {capacity}
+          </Paragraph>
+          <Paragraph style={styles.roomDetails} numberOfLines={1}>
+            {roomData?.participants.length || 0}/{capacity}
           </Paragraph>
         </Card.Content>
       </Card>
 
       {/* Carrusel horizontal de los demás participantes */}
 
-      <FlatList
-        data={otherParticipants}
-        keyExtractor={(item) => item.id}
-        horizontal
-        style={styles.carousel}
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.carouselContainer}
-        renderItem={({ item }) => (
-          <Card style={styles.participantCard}>
-            <Card.Content>
-              <Title style={styles.participantName} numberOfLines={1}>
-                {item.username}
-              </Title>
-              <Paragraph style={styles.participantScore} numberOfLines={1}>
-                Score: {item.score}
-              </Paragraph>
-            </Card.Content>
-          </Card>
-        )}
-      />
+      {otherParticipants.length > 0 ? (
+        <FlatList
+          data={otherParticipants}
+          keyExtractor={(item) => item.id}
+          horizontal
+          style={styles.carousel}
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.carouselContainer}
+          renderItem={({ item }) => (
+            <Card style={styles.participantCard}>
+              <Card.Content>
+                <Title style={styles.participantName} numberOfLines={1}>
+                  {item.username}
+                </Title>
+                <Paragraph style={styles.participantScore} numberOfLines={1}>
+                  Score: {item.score}
+                </Paragraph>
+              </Card.Content>
+            </Card>
+          )}
+        />
+      ) : (
+        <Card style={styles.placeholderCard}>
+          <Card.Content>
+            <Title style={styles.placeholderTitle} numberOfLines={1}>
+              Waiting for others...
+            </Title>
+          </Card.Content>
+        </Card>
+      )}
 
       {/* Tarjeta del usuario actual en la parte inferior */}
       {currentUser && (
@@ -151,6 +160,7 @@ const styles = StyleSheet.create({
     padding: 20,
     display: "flex",
     flexDirection: "column",
+    gap: 10,
   },
   header: {
     flexDirection: "row",
@@ -169,7 +179,11 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: "#F44336",
     textAlign: "center",
-    marginBottom: 10,
+  },
+  code: {
+    fontSize: 21,
+    color: "#E0E0E0",
+    textAlign: "center",
   },
   roomDetails: {
     fontSize: 16,
@@ -178,9 +192,6 @@ const styles = StyleSheet.create({
   },
   carousel: {
     borderStyle: "solid",
-    borderWidth: 1,
-    borderColor: "#F44336",
-    flexGrow: 1,
     flex: 1,
     marginBottom: 10,
   },
@@ -239,11 +250,23 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: "#F44336",
     marginHorizontal: 5,
+    width: "30%",
   },
   homeButton: {
     marginTop: 20,
     backgroundColor: "#F44336",
     alignSelf: "center",
+  },
+  placeholderCard: {
+    backgroundColor: "rgba(45,45,45,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    flexGrow: 1,
+  },
+  placeholderTitle: {
+    fontSize: 20,
+    color: "#E0E0E0",
+    textAlign: "center",
   },
 });
 
