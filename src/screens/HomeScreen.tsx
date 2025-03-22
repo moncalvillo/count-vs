@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { FlatList, StyleSheet, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../navigation/AppNavigator";
 import { Button, Card, Title, Paragraph } from "react-native-paper";
+import { RootStackParamList } from "../types";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -66,29 +66,29 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#1C1C1C", // fondo oscuro
+    backgroundColor: "#1C1C1C",
   },
   title: {
     fontSize: 28,
     marginBottom: 20,
     textAlign: "center",
-    color: "#E0E0E0", // texto claro
+    color: "#E0E0E0",
   },
   list: {
     marginBottom: 20,
   },
   card: {
     marginBottom: 15,
-    backgroundColor: "#2D2D2D", // fondo de la tarjeta
+    backgroundColor: "#2D2D2D",
   },
   cardTitle: {
-    color: "#F44336", // rojo intenso, sensación de batalla
+    color: "#F44336",
   },
   cardParagraph: {
     color: "#FFFFFF",
   },
   createButton: {
-    backgroundColor: "#F44336", // botón en rojo
+    backgroundColor: "#F44336",
   },
   buttonContent: {
     paddingVertical: 8,

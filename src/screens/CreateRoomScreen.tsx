@@ -2,8 +2,9 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import React, { useState } from "react";
 import { StyleSheet, View } from "react-native";
-import { RootStackParamList } from "../navigation/AppNavigator";
+
 import { Button, TextInput, Title } from "react-native-paper";
+import { RootStackParamList } from "../types";
 
 type CreateRoomScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,

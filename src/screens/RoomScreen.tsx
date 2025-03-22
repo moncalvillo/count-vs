@@ -1,17 +1,10 @@
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import React, { useState } from "react";
 import { StyleSheet, View } from "react-native";
-import { RootStackParamList } from "../navigation/AppNavigator";
 import { Title, Paragraph, Button, Card, IconButton } from "react-native-paper";
+import { Participant, RootStackParamList } from "../types";
 
 type RoomScreenProps = NativeStackScreenProps<RootStackParamList, "Room">;
-
-interface Participant {
-  id: string;
-  name: string;
-  score: number;
-  isCurrent: boolean;
-}
 
 const RoomScreen = ({ route }: RoomScreenProps) => {
   const { roomCode, roomName, roomDescription, roomCapacity } = route.params;
