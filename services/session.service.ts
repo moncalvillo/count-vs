@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { saveDocument } from "./db.service";
 
 const SESSION_KEY = "userSession";
 
@@ -12,6 +13,14 @@ export const saveSession = async (session: Session): Promise<void> => {
     await AsyncStorage.setItem(SESSION_KEY, JSON.stringify(session));
   } catch (error) {
     console.error("Error saving session:", error);
+  }
+  try {
+    await saveDocument("sessions", session.userId, {
+      username: session.username,
+      createdAt: new Date(),
+    });
+  } catch (error) {
+    console.error("Error saving session to Firebase via db.service:", error);
   }
 };
 

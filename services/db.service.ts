@@ -7,6 +7,7 @@ import {
   query,
   updateDoc,
   doc,
+  setDoc,
 } from "firebase/firestore";
 
 // Ejemplo para agregar un documento a una colección
@@ -47,5 +48,17 @@ export const updateDocument = async (
     await updateDoc(docRef, data);
   } catch (error) {
     console.error("Error updating document: ", error);
+  }
+};
+
+export const saveDocument = async (
+  collectionName: string,
+  docId: string,
+  data: DocumentData
+): Promise<void> => {
+  try {
+    await setDoc(doc(db, collectionName, docId), data);
+  } catch (error) {
+    console.error("Error saving document in db.service:", error);
   }
 };
