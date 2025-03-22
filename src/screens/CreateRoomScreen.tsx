@@ -35,7 +35,6 @@ const CreateRoomScreen = () => {
           id: session.userId,
           username: session.username,
           score: 0,
-          isCurrent: true,
         },
       ],
     };

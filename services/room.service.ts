@@ -6,6 +6,7 @@ import {
   updateDocument,
   getDocument,
   getDocumentsFromCollection,
+  subscribeToCollection,
 } from "./db.service";
 
 /**
@@ -141,4 +142,57 @@ export const getRooms = async (userId: string): Promise<RoomData[]> => {
     console.error("Error fetching rooms:", error);
     return [];
   }
+};
+
+/**
+ * Subscribes to all rooms in Firestore and returns only those in which the user is a participant.
+ * @param userId The ID of the user.
+ * @param callback A function that receives an array of RoomData.
+ * @returns An unsubscribe function.
+ */
+export const subscribeRoomsForUser = (
+  userId: string,
+  callback: (rooms: RoomData[]) => void
+) => {
+  const unsubscribe = subscribeToCollection(
+    "rooms",
+    (docs) => {
+      const rooms: RoomData[] = docs as RoomData[];
+      const userRooms = rooms.filter((room) =>
+        room.participants.some(
+          (participant: Participant) => participant.id === userId
+        )
+      );
+      callback(userRooms);
+    },
+    (error) => {
+      console.error("Error subscribing to rooms:", error);
+    }
+  );
+  return unsubscribe;
+};
+
+/**
+ * Subscribes to a room document in Firestore in real time.
+ * @param roomCode The room code (document ID).
+ * @param callback A function called with the updated RoomData.
+ * @returns The unsubscribe function.
+ */
+export const subscribeRoom = (
+  roomCode: string,
+  callback: (data: RoomData) => void
+): (() => void) => {
+  const unsubscribe = subscribeToCollection(
+    "rooms",
+    (docs) => {
+      const room = docs.find((doc) => doc.code === roomCode);
+      if (room) {
+        callback(room as RoomData);
+      }
+    },
+    (error) => {
+      console.error("Error subscribing to room:", error);
+    }
+  );
+  return unsubscribe;
 };

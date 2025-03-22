@@ -5,7 +5,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Button, Card, Title, Paragraph } from "react-native-paper";
 import { Participant, RoomData, RootStackParamList } from "../types";
 import { clearSession, getSession } from "../../services/session.service";
-import { getRooms } from "../../services/room.service";
+import { getRooms, subscribeRoomsForUser } from "../../services/room.service";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -17,23 +17,22 @@ const HomeScreen = () => {
   const [rooms, setRooms] = useState<RoomData[]>([]);
 
   useEffect(() => {
-    const fetchRooms = async () => {
-      // Obtener la sesión actual para conocer el userId
+    let unsubscribe: (() => void) | undefined;
+
+    (async () => {
       const session = await getSession();
       if (!session) return;
-      const allRooms: RoomData[] = await getRooms(session.userId);
-      // Filtrar las salas en las que el usuario actual figura en el array de participantes
-      const userRooms = allRooms.filter(
-        (room) =>
-          room.participants &&
-          room.participants.some((p: Participant) => p.id === session.userId)
-      );
-      setRooms(userRooms);
+      unsubscribe = subscribeRoomsForUser(session.userId, (rooms) => {
+        setRooms(rooms);
+      });
+    })();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
     };
-
-    fetchRooms();
   }, []);
-
   const renderRoom = ({ item }: { item: RoomData }) => {
     // Mostrar el nombre de la sala si existe; si no, el código.
     const titleText =

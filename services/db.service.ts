@@ -10,6 +10,7 @@ import {
   getDocs,
   DocumentData,
   query,
+  onSnapshot,
 } from "firebase/firestore";
 
 /**
@@ -76,4 +77,32 @@ export const getDocumentsFromCollection = async (
     console.error("Error getting documents from collection:", error);
     return [];
   }
+};
+
+/**
+ * Subscribes to a Firestore collection and executes the callback with the documents.
+ * @param collectionName The name of the collection.
+ * @param callback A function that receives an array of DocumentData.
+ * @param errorCallback Optional error callback.
+ * @returns An unsubscribe function.
+ */
+export const subscribeToCollection = (
+  collectionName: string,
+  callback: (docs: DocumentData[]) => void,
+  errorCallback?: (error: any) => void
+) => {
+  const colRef = collection(db, collectionName);
+  const q = query(colRef);
+  const unsubscribe = onSnapshot(
+    q,
+    (querySnapshot) => {
+      const docs = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      callback(docs);
+    },
+    errorCallback
+  );
+  return unsubscribe;
 };

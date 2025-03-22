@@ -4,7 +4,11 @@ import React, { useEffect, useState } from "react";
 import { StyleSheet, View, FlatList } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Title, Paragraph, Card, IconButton, Button } from "react-native-paper";
-import { getRoom, updateRoom } from "../../services/room.service";
+import {
+  getRoom,
+  subscribeRoom,
+  updateRoom,
+} from "../../services/room.service";
 import { RoomData, RootStackParamList, Participant } from "../types";
 import { getSession } from "../../services/session.service";
 
@@ -16,21 +20,25 @@ const RoomScreen = ({ route, navigation }: RoomScreenProps) => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchRoom = async () => {
-      const data = await getRoom(code);
-      if (data) {
+    let unsubscribe: (() => void) | undefined;
+    (async () => {
+      unsubscribe = subscribeRoom(code, (data) => {
         setRoomData(data);
-      }
-    };
-    const getCurrentUserId = async () => {
+      });
+    })();
+
+    (async () => {
       const session = await getSession();
       if (session) {
         setCurrentUserId(session.userId);
       }
+    })();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
     };
-    getCurrentUserId();
-    fetchRoom();
-    // Para sincronización en tiempo real, en producción se puede usar onSnapshot.
   }, [code]);
 
   const updateScoreForCurrentUser = async (increment: number) => {
