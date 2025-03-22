@@ -3,20 +3,11 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import CreateRoomScreen from "../screens/CreateRoomScreen";
 import HomeScreen from "../screens/HomeScreen";
 import RoomScreen from "../screens/RoomScreen";
+import { RootStackParamList } from "../types";
 
-export type RootStackParamList = {
-  Home: undefined;
-  CreateRoom: undefined;
-  Room: {
-    roomCode?: string;
-    roomName?: string;
-    roomDescription?: string;
-    roomCapacity?: number;
-  };
-};
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-function RootStack() {
+function AppNavigator() {
   return (
     <Stack.Navigator initialRouteName="Home">
       <Stack.Screen name="Home" component={HomeScreen} />
@@ -25,11 +16,4 @@ function RootStack() {
     </Stack.Navigator>
   );
 }
-
-export default function AppNavigator() {
-  return (
-    <NavigationContainer>
-      <RootStack />
-    </NavigationContainer>
-  );
-}
+export default AppNavigator;
