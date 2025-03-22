@@ -1,11 +1,8 @@
-// services/firebase.service.ts
-
 import { initializeApp, FirebaseApp } from "firebase/app";
 import { getFirestore, Firestore } from "firebase/firestore";
 import { getAuth, Auth } from "firebase/auth";
-import { config } from "../config";
+import { config } from "../src/config";
 
-// Configuración de Firebase: reemplaza estos valores con los de tu proyecto Firebase
 const firebaseConfig = {
   apiKey: config.firebaseConfig.apiKey,
   authDomain: config.firebaseConfig.authDomain,

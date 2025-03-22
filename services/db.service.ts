@@ -1,4 +1,3 @@
-// services/db.service.ts
 import { db } from "./firebase.service";
 import {
   collection,

@@ -1,4 +1,3 @@
-// services/auth.service.ts
 import { auth } from "./firebase.service";
 import {
   signInWithEmailAndPassword,
@@ -7,7 +6,6 @@ import {
   UserCredential,
 } from "firebase/auth";
 
-// Ejemplo para iniciar sesión
 export const login = async (
   email: string,
   password: string
@@ -25,7 +23,6 @@ export const login = async (
   }
 };
 
-// Ejemplo para registrarse
 export const register = async (
   email: string,
   password: string
@@ -43,7 +40,6 @@ export const register = async (
   }
 };
 
-// Ejemplo para cerrar sesión
 export const logout = async (): Promise<void> => {
   try {
     await signOut(auth);
