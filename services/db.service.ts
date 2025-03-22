@@ -1,56 +1,20 @@
+// services/db.service.ts
+
 import { db } from "./firebase.service";
 import {
+  doc,
+  setDoc,
+  updateDoc,
+  getDoc,
   collection,
-  addDoc,
   getDocs,
   DocumentData,
   query,
-  updateDoc,
-  doc,
-  setDoc,
 } from "firebase/firestore";
 
-// Ejemplo para agregar un documento a una colección
-export const addDocument = async (
-  collectionName: string,
-  data: DocumentData
-): Promise<void> => {
-  try {
-    await addDoc(collection(db, collectionName), data);
-  } catch (error) {
-    console.error("Error adding document: ", error);
-  }
-};
-
-// Ejemplo para obtener documentos de una colección
-export const getDocuments = async (
-  collectionName: string
-): Promise<DocumentData[]> => {
-  try {
-    const colRef = collection(db, collectionName);
-    const q = query(colRef);
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-  } catch (error) {
-    console.error("Error getting documents: ", error);
-    return [];
-  }
-};
-
-// Ejemplo para actualizar un documento
-export const updateDocument = async (
-  collectionName: string,
-  docId: string,
-  data: Partial<DocumentData>
-): Promise<void> => {
-  try {
-    const docRef = doc(db, collectionName, docId);
-    await updateDoc(docRef, data);
-  } catch (error) {
-    console.error("Error updating document: ", error);
-  }
-};
-
+/**
+ * Saves a document in the specified collection using the given document ID.
+ */
 export const saveDocument = async (
   collectionName: string,
   docId: string,
@@ -59,6 +23,57 @@ export const saveDocument = async (
   try {
     await setDoc(doc(db, collectionName, docId), data);
   } catch (error) {
-    console.error("Error saving document in db.service:", error);
+    console.error("Error saving document:", error);
+    throw error;
+  }
+};
+
+/**
+ * Updates a document in the specified collection using the given document ID.
+ */
+export const updateDocument = async (
+  collectionName: string,
+  docId: string,
+  data: Partial<DocumentData>
+): Promise<void> => {
+  try {
+    await updateDoc(doc(db, collectionName, docId), data);
+  } catch (error) {
+    console.error("Error updating document:", error);
+    throw error;
+  }
+};
+
+/**
+ * Retrieves a document from the specified collection using the given document ID.
+ */
+export const getDocument = async (
+  collectionName: string,
+  docId: string
+): Promise<DocumentData | null> => {
+  try {
+    const docRef = doc(db, collectionName, docId);
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists() ? docSnap.data() : null;
+  } catch (error) {
+    console.error("Error getting document:", error);
+    return null;
+  }
+};
+
+/**
+ * Retrieves all documents from a specified collection.
+ */
+export const getDocumentsFromCollection = async (
+  collectionName: string
+): Promise<DocumentData[]> => {
+  try {
+    const colRef = collection(db, collectionName);
+    const q = query(colRef);
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error("Error getting documents from collection:", error);
+    return [];
   }
 };

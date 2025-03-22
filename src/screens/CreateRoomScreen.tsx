@@ -1,9 +1,12 @@
-import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import React, { useState } from "react";
-import { StyleSheet, View } from "react-native";
+// src/screens/CreateRoomScreen.tsx
 
-import { Button, TextInput, Title } from "react-native-paper";
+import React, { useState } from "react";
+import { View, StyleSheet } from "react-native";
+import { Button, IconButton, TextInput, Title } from "react-native-paper";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useNavigation } from "@react-navigation/native";
+import { createRoom } from "../../services/room.service";
+import { getSession } from "../../services/session.service";
 import { RootStackParamList } from "../types";
 
 type CreateRoomScreenNavigationProp = NativeStackNavigationProp<
@@ -11,30 +14,54 @@ type CreateRoomScreenNavigationProp = NativeStackNavigationProp<
   "CreateRoom"
 >;
 
-const generateRoomCode = (): string => {
-  return Math.random().toString(36).substring(2, 8).toUpperCase();
-};
-
 const CreateRoomScreen = () => {
   const navigation = useNavigation<CreateRoomScreenNavigationProp>();
+  const [roomName, setRoomName] = useState("");
+  const [description, setDescription] = useState("");
+  const [capacity, setCapacity] = useState("");
 
-  const [roomName, setRoomName] = useState<string>("");
-  const [description, setDescription] = useState<string>("");
-  const [capacity, setCapacity] = useState<string>("");
-
-  const handleCreateRoom = () => {
-    const roomCode = generateRoomCode();
-    // Aquí puedes agregar la lógica para crear la sala en Firebase
-    navigation.navigate("Room", {
-      roomCode,
-      roomName,
-      roomDescription: description,
-      roomCapacity: parseInt(capacity, 10),
-    });
+  const handleCreateRoom = async () => {
+    const session = await getSession();
+    if (!session) {
+      console.error("No session found");
+      return;
+    }
+    const roomDetails = {
+      name: roomName,
+      description,
+      capacity: parseInt(capacity, 10),
+      participants: [
+        {
+          id: session.userId,
+          username: session.username,
+          score: 0,
+          isCurrent: true,
+        },
+      ],
+    };
+    try {
+      const roomCode = await createRoom(roomDetails);
+      navigation.navigate("Room", {
+        code: roomCode,
+        name: roomName,
+        description,
+        capacity: parseInt(capacity, 10),
+      });
+    } catch (error) {
+      console.error("Error creating room:", error);
+    }
   };
 
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <IconButton
+          icon="arrow-left"
+          size={20}
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        />
+      </View>
       <Title style={styles.title}>Create a New Room</Title>
       <TextInput
         label="Room Name"
@@ -42,13 +69,6 @@ const CreateRoomScreen = () => {
         onChangeText={setRoomName}
         style={styles.input}
         mode="outlined"
-        textColor="#E0E0E0"
-        theme={{
-          colors: {
-            primary: "#F44336",
-            placeholder: "#E0E0E0",
-          },
-        }}
       />
       <TextInput
         label="Description"
@@ -57,13 +77,6 @@ const CreateRoomScreen = () => {
         style={styles.input}
         mode="outlined"
         multiline
-        textColor="#E0E0E0"
-        theme={{
-          colors: {
-            primary: "#F44336",
-            placeholder: "#E0E0E0",
-          },
-        }}
       />
       <TextInput
         label="Capacity"
@@ -72,20 +85,8 @@ const CreateRoomScreen = () => {
         style={styles.input}
         mode="outlined"
         keyboardType="numeric"
-        textColor="#E0E0E0"
-        theme={{
-          colors: {
-            primary: "#F44336",
-            placeholder: "#E0E0E0",
-          },
-        }}
       />
-      <Button
-        mode="contained"
-        onPress={handleCreateRoom}
-        style={styles.button}
-        contentStyle={styles.buttonContent}
-      >
+      <Button mode="contained" onPress={handleCreateRoom} style={styles.button}>
         Generate Room
       </Button>
     </View>
@@ -113,8 +114,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#F44336",
     marginTop: 10,
   },
-  buttonContent: {
-    paddingVertical: 8,
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  backButton: {
+    backgroundColor: "#F44336",
   },
 });
 

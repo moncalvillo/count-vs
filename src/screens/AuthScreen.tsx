@@ -1,11 +1,8 @@
 // src/screens/UsernameScreen.tsx
 import React, { useState } from "react";
-import { View, StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { Button, TextInput, Title } from "react-native-paper";
 import { saveSession, Session } from "../../services/session.service";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useNavigation } from "@react-navigation/native";
-import { AuthStackParamList } from "../types";
 
 interface UsernameScreenProps {
   onSessionSaved: () => void;

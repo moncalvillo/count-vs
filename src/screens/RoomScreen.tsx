@@ -1,84 +1,145 @@
+// src/screens/RoomScreen.tsx
+
+import React, { useEffect, useState } from "react";
+import { StyleSheet, View, FlatList } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import React, { useState } from "react";
-import { StyleSheet, View } from "react-native";
-import { Title, Paragraph, Button, Card, IconButton } from "react-native-paper";
-import { Participant, RootStackParamList } from "../types";
+import { Title, Paragraph, Card, IconButton, Button } from "react-native-paper";
+import { getRoom, updateRoom } from "../../services/room.service";
+import { RoomData, RootStackParamList, Participant } from "../types";
+import { getSession } from "../../services/session.service";
 
 type RoomScreenProps = NativeStackScreenProps<RootStackParamList, "Room">;
 
-const RoomScreen = ({ route }: RoomScreenProps) => {
-  const { roomCode, roomName, roomDescription, roomCapacity } = route.params;
+const RoomScreen = ({ route, navigation }: RoomScreenProps) => {
+  const { code, name, description, capacity } = route.params;
+  const [roomData, setRoomData] = useState<RoomData | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  // Simulamos una lista de participantes
-  const [participants, setParticipants] = useState<Participant[]>([
-    { id: "1", name: "You", score: 0, isCurrent: true },
-    { id: "2", name: "Opponent 1", score: 5, isCurrent: false },
-    { id: "3", name: "Opponent 2", score: 3, isCurrent: false },
-  ]);
+  useEffect(() => {
+    const fetchRoom = async () => {
+      const data = await getRoom(code);
+      if (data) {
+        setRoomData(data);
+      }
+    };
+    const getCurrentUserId = async () => {
+      const session = await getSession();
+      if (session) {
+        setCurrentUserId(session.userId);
+      }
+    };
+    getCurrentUserId();
+    fetchRoom();
+    // Para sincronización en tiempo real, en producción se puede usar onSnapshot.
+  }, [code]);
 
-  // Solo el usuario actual puede aumentar su propio puntaje
-  const addPointToCurrentUser = () => {
-    setParticipants((prevParticipants) =>
-      prevParticipants.map((participant) =>
-        participant.isCurrent
-          ? { ...participant, score: participant.score + 1 }
-          : participant
-      )
+  const updateScoreForCurrentUser = async (increment: number) => {
+    if (!roomData) return;
+    const currentParticipant = roomData.participants.find(
+      (p) => p.id === currentUserId
     );
-  };
-  const subtractPointToCurrentUser = () => {
-    if (participants[0].score === 0) return;
-    setParticipants((prevParticipants) =>
-      prevParticipants.map((participant) =>
-        participant.isCurrent
-          ? { ...participant, score: participant.score - 1 }
-          : participant
-      )
+
+    if (
+      !currentParticipant ||
+      currentParticipant.score + increment > 100 ||
+      currentParticipant.score + increment < 0
+    ) {
+      return;
+    }
+
+    const updatedParticipants = roomData.participants.map((participant) =>
+      participant.id === currentUserId
+        ? { ...participant, score: participant.score + increment }
+        : participant
     );
+    setRoomData({ ...roomData, participants: updatedParticipants });
+    updateRoom(code, { participants: updatedParticipants });
   };
+
+  // Extraemos el participante actual y los demás participantes
+  const currentUser = roomData?.participants.find(
+    (p) => p.id === currentUserId
+  );
+  const otherParticipants =
+    roomData?.participants.filter((p) => p.id !== currentUserId) || [];
 
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <IconButton
+          icon="arrow-left"
+          size={20}
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        />
+      </View>
+
+      {/* Datos de la sala */}
       <Card style={styles.roomCard}>
         <Card.Content>
-          <Title style={styles.roomTitle}>{roomName || "Room"}</Title>
+          <Title style={styles.roomTitle} numberOfLines={1}>
+            {name}
+          </Title>
           <Paragraph style={styles.roomDetails}>
-            Code: {roomCode}
+            Code: {code}
             {"\n"}
-            {roomDescription && `Description: ${roomDescription}\n`}
-            {roomCapacity && `Capacity: ${roomCapacity}`}
+            {description}
+            {"\n"}Capacity: {capacity}
           </Paragraph>
         </Card.Content>
       </Card>
 
-      <View style={styles.participantsContainer}>
-        {participants.map((participant) => (
-          <Card key={participant.id} style={styles.participantCard}>
+      {/* Carrusel horizontal de los demás participantes */}
+
+      <FlatList
+        data={otherParticipants}
+        keyExtractor={(item) => item.id}
+        horizontal
+        style={styles.carousel}
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.carouselContainer}
+        renderItem={({ item }) => (
+          <Card style={styles.participantCard}>
             <Card.Content>
-              <Title style={styles.participantName}>{participant.name}</Title>
-              <Paragraph style={styles.participantScore}>
-                Score: {participant.score}
+              <Title style={styles.participantName} numberOfLines={1}>
+                {item.username}
+              </Title>
+              <Paragraph style={styles.participantScore} numberOfLines={1}>
+                Score: {item.score}
               </Paragraph>
-              {participant.isCurrent && (
-                <View style={styles.iconButtonContainer}>
-                  <IconButton
-                    icon={"plus"}
-                    mode="contained"
-                    onPress={addPointToCurrentUser}
-                    style={styles.button}
-                  />
-                  <IconButton
-                    icon={"minus"}
-                    mode="contained"
-                    onPress={subtractPointToCurrentUser}
-                    style={styles.button}
-                  />
-                </View>
-              )}
             </Card.Content>
           </Card>
-        ))}
-      </View>
+        )}
+      />
+
+      {/* Tarjeta del usuario actual en la parte inferior */}
+      {currentUser && (
+        <View style={styles.currentUserContainer}>
+          <Card style={styles.currentUserCard}>
+            <Card.Content>
+              <Title style={styles.currentUserTitle} numberOfLines={1}>
+                {currentUser.username} (You)
+              </Title>
+              <Paragraph style={styles.currentUserScore} numberOfLines={1}>
+                Score: {currentUser.score}
+              </Paragraph>
+            </Card.Content>
+          </Card>
+          <View style={styles.buttonContainer}>
+            <IconButton
+              icon="plus"
+              onPress={() => updateScoreForCurrentUser(1)}
+              style={styles.button}
+            />
+            <IconButton
+              icon="minus"
+              onPress={() => updateScoreForCurrentUser(-1)}
+              style={styles.button}
+            />
+          </View>
+        </View>
+      )}
     </View>
   );
 };
@@ -88,7 +149,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#1C1C1C",
     padding: 20,
+    display: "flex",
+    flexDirection: "column",
+  },
+  header: {
+    flexDirection: "row",
     alignItems: "center",
+    marginBottom: 10,
+  },
+  backButton: {
+    backgroundColor: "#F44336",
   },
   roomCard: {
     width: "100%",
@@ -106,12 +176,29 @@ const styles = StyleSheet.create({
     color: "#E0E0E0",
     textAlign: "center",
   },
-  participantsContainer: {
-    width: "100%",
+  carousel: {
+    borderStyle: "solid",
+    borderWidth: 1,
+    borderColor: "#F44336",
+    flexGrow: 1,
+    flex: 1,
+    marginBottom: 10,
+  },
+  carouselContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 10,
+    flexGrow: 1,
+    flex: 1,
   },
   participantCard: {
-    marginBottom: 15,
+    width: 250,
+    marginHorizontal: 10,
     backgroundColor: "#2D2D2D",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
   },
   participantName: {
     fontSize: 20,
@@ -124,19 +211,39 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginVertical: 5,
   },
-  button: {
-    backgroundColor: "#F44336",
-    alignSelf: "center",
-    marginTop: 10,
-  },
-  iconButtonContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
+  currentUserContainer: {
     alignItems: "center",
   },
-  buttonContent: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+  currentUserCard: {
+    width: "100%",
+    backgroundColor: "#2D2D2D",
+    marginBottom: 10,
+  },
+  currentUserTitle: {
+    fontSize: 22,
+    color: "#F44336",
+    textAlign: "center",
+  },
+  currentUserScore: {
+    fontSize: 20,
+    color: "#E0E0E0",
+    textAlign: "center",
+    marginVertical: 5,
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  button: {
+    backgroundColor: "#F44336",
+    marginHorizontal: 5,
+  },
+  homeButton: {
+    marginTop: 20,
+    backgroundColor: "#F44336",
+    alignSelf: "center",
   },
 });
 

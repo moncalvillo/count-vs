@@ -2,11 +2,12 @@ export type RootStackParamList = {
   Home: undefined;
   CreateRoom: undefined;
   Room: {
-    roomCode?: string;
-    roomName?: string;
-    roomDescription?: string;
-    roomCapacity?: number;
+    code: string;
+    name?: string;
+    description?: string;
+    capacity?: number;
   };
+  JoinRoom: undefined;
 };
 
 export type AuthStackParamList = {
@@ -15,7 +16,15 @@ export type AuthStackParamList = {
 
 export type Participant = {
   id: string;
-  name: string;
+  username: string;
   score: number;
-  isCurrent: boolean;
+};
+
+export type RoomData = {
+  code: string;
+  name: string;
+  description: string;
+  capacity: number;
+  createdAt: any;
+  participants: Participant[];
 };
