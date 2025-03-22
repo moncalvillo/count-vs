@@ -4,6 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Button, Card, Title, Paragraph } from "react-native-paper";
 import { RootStackParamList } from "../types";
+import { clearSession } from "../../services/session.service";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -57,6 +58,15 @@ const HomeScreen = () => {
         contentStyle={styles.buttonContent}
       >
         Create New Room
+      </Button>
+      <Button
+        mode="outlined"
+        onPress={() => {
+          clearSession();
+        }}
+        contentStyle={styles.buttonContent}
+      >
+        <Title>Delete data</Title>
       </Button>
     </View>
   );

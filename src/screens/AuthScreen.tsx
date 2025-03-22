@@ -7,27 +7,25 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useNavigation } from "@react-navigation/native";
 import { AuthStackParamList } from "../types";
 
-type UsernameScreenNavigationProp = NativeStackNavigationProp<
-  AuthStackParamList,
-  "Username"
->;
+interface UsernameScreenProps {
+  onSessionSaved: () => void;
+}
 
 const generateUserId = (): string => {
   return Math.random().toString(36).substring(2, 6).toUpperCase();
 };
 
-const UsernameScreen = () => {
-  const navigation = useNavigation<UsernameScreenNavigationProp>();
-  const [username, setUsername] = useState("");
+const AuthScreen = ({ onSessionSaved }: UsernameScreenProps) => {
+  const [auth, setAuth] = useState("");
 
   const handleSaveUsername = async () => {
-    if (username.trim().length === 0) return;
+    if (auth.trim().length === 0) return;
     const session: Session = {
-      username: username.trim(),
+      username: auth.trim(),
       userId: generateUserId(),
     };
     await saveSession(session);
-    navigation.replace("Username");
+    onSessionSaved();
   };
 
   return (
@@ -35,8 +33,8 @@ const UsernameScreen = () => {
       <Title style={styles.title}>Choose your username</Title>
       <TextInput
         label="Username"
-        value={username}
-        onChangeText={setUsername}
+        value={auth}
+        onChangeText={setAuth}
         style={styles.input}
         mode="outlined"
       />
@@ -73,4 +71,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default UsernameScreen;
+export default AuthScreen;

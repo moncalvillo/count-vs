@@ -10,7 +10,7 @@ export type RootStackParamList = {
 };
 
 export type AuthStackParamList = {
-  Username: undefined;
+  Auth: undefined;
 };
 
 export type Participant = {

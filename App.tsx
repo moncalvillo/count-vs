@@ -45,7 +45,11 @@ const App = () => {
 
   return (
     <NavigationContainer>
-      {sessionExists ? <AppNavigator /> : <AuthNavigator />}
+      {sessionExists ? (
+        <AppNavigator />
+      ) : (
+        <AuthNavigator onSessionSaved={() => setSessionExists(true)} />
+      )}
     </NavigationContainer>
   );
 };
