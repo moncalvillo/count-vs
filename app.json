@@ -4,10 +4,10 @@
     "slug": "count-vs",
     "version": "0.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/count-vs.png",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/count-vs.png",
       "resizeMode": "contain",
       "backgroundColor": "#1C1C1C"
     },
@@ -23,13 +23,13 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/count-vs.png",
         "backgroundColor": "#1C1C1C"
       },
       "package": "com.moncalvillo.countvs"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/count-vs.png"
     },
     "extra": {
       "eas": {
